@@ -12,7 +12,7 @@ use crate::logical_geometry::WritingMode;
 use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
-use crate::queries::values::{PrefersColorScheme, PrefersReducedMotion};
+use crate::queries::values::{MediaEnvironment, PrefersColorScheme, PrefersReducedMotion};
 use crate::values::computed::font::GenericFontFamily;
 use crate::values::computed::{CSSPixelLength, Length, LineHeight, NonNegativeLength};
 use crate::values::specified::color::{ColorSchemeFlags, ForcedColors, SystemColor};
@@ -61,12 +61,9 @@ pub(super) struct ExtraDeviceData {
     /// The current quirks mode.
     #[ignore_malloc_size_of = "Pure stack type"]
     quirks_mode: QuirksMode,
-    /// Whether the user prefers light mode or dark mode
+    /// The embedder-controlled media-feature values (preferences + capabilities).
     #[ignore_malloc_size_of = "Pure stack type"]
-    prefers_color_scheme: PrefersColorScheme,
-    /// Whether the user prefers reduced motion.
-    #[ignore_malloc_size_of = "Pure stack type"]
-    prefers_reduced_motion: PrefersReducedMotion,
+    media_environment: MediaEnvironment,
     /// An implementation of a trait which implements support for querying font metrics.
     #[ignore_malloc_size_of = "Owned by embedder"]
     font_metrics_provider: Box<dyn FontMetricsProvider>,
@@ -106,10 +103,13 @@ impl Device {
                 viewport_size,
                 device_pixel_ratio,
                 quirks_mode,
-                prefers_color_scheme,
-                // Default; the embedder overrides via `set_prefers_reduced_motion`
-                // (kept out of `new`'s signature so existing callers are unchanged).
-                prefers_reduced_motion: PrefersReducedMotion::NoPreference,
+                // Seed the environment from `new`'s color-scheme param (kept for
+                // source compatibility); the embedder overrides the rest via
+                // `set_media_environment` / the per-preference setters.
+                media_environment: MediaEnvironment {
+                    prefers_color_scheme,
+                    ..MediaEnvironment::default()
+                },
                 font_metrics_provider,
             },
         }
@@ -256,32 +256,42 @@ impl Device {
         AbsoluteColor::BLACK
     }
 
-    /// Set the [`PrefersColorScheme`] value on this [`Device`].
+    /// Returns the full media-feature environment on this [`Device`].
+    pub fn media_environment(&self) -> MediaEnvironment {
+        self.extra.media_environment
+    }
+
+    /// Replace the whole media-feature environment on this [`Device`] (the
+    /// atomic, non-clobbering setter; the per-feature setters below are
+    /// read-modify-write shims over this).
     ///
     /// Note that this does not update any associated `Stylist`. For this you must call
     /// `Stylist::media_features_change_changed_style` and
     /// `Stylist::force_stylesheet_origins_dirty`.
+    pub fn set_media_environment(&mut self, env: MediaEnvironment) {
+        self.extra.media_environment = env;
+    }
+
+    /// Set the [`PrefersColorScheme`] value on this [`Device`]. See
+    /// [`set_media_environment`](Self::set_media_environment) for the Stylist note.
     pub fn set_color_scheme(&mut self, new_color_scheme: PrefersColorScheme) {
-        self.extra.prefers_color_scheme = new_color_scheme;
+        self.extra.media_environment.prefers_color_scheme = new_color_scheme;
     }
 
     /// Returns the color scheme of this [`Device`].
     pub fn color_scheme(&self) -> PrefersColorScheme {
-        self.extra.prefers_color_scheme
+        self.extra.media_environment.prefers_color_scheme
     }
 
-    /// Set the [`PrefersReducedMotion`] value on this [`Device`].
-    ///
-    /// Note that this does not update any associated `Stylist`. For this you must call
-    /// `Stylist::media_features_change_changed_style` and
-    /// `Stylist::force_stylesheet_origins_dirty`.
+    /// Set the [`PrefersReducedMotion`] value on this [`Device`]. See
+    /// [`set_media_environment`](Self::set_media_environment) for the Stylist note.
     pub fn set_prefers_reduced_motion(&mut self, value: PrefersReducedMotion) {
-        self.extra.prefers_reduced_motion = value;
+        self.extra.media_environment.prefers_reduced_motion = value;
     }
 
     /// Returns the reduced-motion preference of this [`Device`].
     pub fn prefers_reduced_motion(&self) -> PrefersReducedMotion {
-        self.extra.prefers_reduced_motion
+        self.extra.media_environment.prefers_reduced_motion
     }
 
     pub(crate) fn is_dark_color_scheme(&self, _: ColorSchemeFlags) -> bool {

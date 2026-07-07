@@ -37,10 +37,11 @@ impl Orientation {
 }
 
 /// Values for the prefers-color-scheme media feature.
-#[derive(Clone, Copy, Debug, FromPrimitive, Parse, PartialEq, ToCss)]
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
 #[repr(u8)]
 #[allow(missing_docs)]
 pub enum PrefersColorScheme {
+    #[default]
     Light,
     Dark,
 }
@@ -54,4 +55,20 @@ pub enum PrefersReducedMotion {
     #[default]
     NoPreference,
     Reduce,
+}
+
+/// The embedder-controlled media-feature values (user preferences and, as the
+/// Servo-mode parity set grows, device capabilities), held together so a host
+/// can set them on a [`Device`](crate::device::Device) atomically instead of one
+/// clobbering setter per feature. `Default` is a conservative desktop screen.
+///
+/// This is the Servo-mode counterpart of the per-feature state Gecko reads from
+/// its `nsPresContext`. It starts with the two preferences serval wires today
+/// and grows one field per media-feature parity phase.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct MediaEnvironment {
+    /// `prefers-color-scheme` (default: light).
+    pub prefers_color_scheme: PrefersColorScheme,
+    /// `prefers-reduced-motion` (default: no-preference).
+    pub prefers_reduced_motion: PrefersReducedMotion,
 }
