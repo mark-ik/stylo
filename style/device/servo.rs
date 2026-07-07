@@ -12,7 +12,7 @@ use crate::logical_geometry::WritingMode;
 use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
-use crate::queries::values::{PrefersColorScheme, PrefersReducedMotion};
+use crate::queries::values::{MediaEnvironment, PrefersColorScheme, PrefersReducedMotion};
 use crate::servo::media_features::PointerCapabilities;
 use crate::values::computed::font::GenericFontFamily;
 use crate::values::computed::{CSSPixelLength, Length, LineHeight, NonNegativeLength};
@@ -64,12 +64,9 @@ pub(super) struct ExtraDeviceData {
     /// The current quirks mode.
     #[ignore_malloc_size_of = "Pure stack type"]
     quirks_mode: QuirksMode,
-    /// Whether the user prefers light mode or dark mode
+    /// The embedder-controlled media-feature values.
     #[ignore_malloc_size_of = "Pure stack type"]
-    prefers_color_scheme: PrefersColorScheme,
-    /// Whether the user prefers reduced motion.
-    #[ignore_malloc_size_of = "Pure stack type"]
-    prefers_reduced_motion: PrefersReducedMotion,
+    media_environment: MediaEnvironment,
     /// The capabilities of the primary pointer input
     #[ignore_malloc_size_of = "Pure stack type"]
     primary_pointer_capabilities: PointerCapabilities,
@@ -119,8 +116,10 @@ impl Device {
                 device_size,
                 device_pixel_ratio,
                 quirks_mode,
-                prefers_color_scheme,
-                prefers_reduced_motion: PrefersReducedMotion::NoPreference,
+                media_environment: MediaEnvironment {
+                    prefers_color_scheme,
+                    ..MediaEnvironment::default()
+                },
                 primary_pointer_capabilities,
                 all_pointer_capabilities,
                 font_metrics_provider,
@@ -284,18 +283,28 @@ impl Device {
         AbsoluteColor::BLACK
     }
 
-    /// Set the [`PrefersColorScheme`] value on this [`Device`].
+    /// Returns the full embedder-controlled media environment.
+    pub fn media_environment(&self) -> MediaEnvironment {
+        self.extra.media_environment
+    }
+
+    /// Replaces the full embedder-controlled media environment.
     ///
     /// Note that this does not update any associated `Stylist`. For this you must call
     /// `Stylist::media_features_change_changed_style` and
     /// `Stylist::force_stylesheet_origins_dirty`.
+    pub fn set_media_environment(&mut self, env: MediaEnvironment) {
+        self.extra.media_environment = env;
+    }
+
+    /// Set the [`PrefersColorScheme`] value on this [`Device`].
     pub fn set_color_scheme(&mut self, new_color_scheme: PrefersColorScheme) {
-        self.extra.prefers_color_scheme = new_color_scheme;
+        self.extra.media_environment.prefers_color_scheme = new_color_scheme;
     }
 
     /// Returns the color scheme of this [`Device`].
     pub fn color_scheme(&self) -> PrefersColorScheme {
-        self.extra.prefers_color_scheme
+        self.extra.media_environment.prefers_color_scheme
     }
 
     /// Set the [`PrefersReducedMotion`] value on this [`Device`].
@@ -304,12 +313,12 @@ impl Device {
     /// `Stylist::media_features_change_changed_style` and
     /// `Stylist::force_stylesheet_origins_dirty`.
     pub fn set_prefers_reduced_motion(&mut self, value: PrefersReducedMotion) {
-        self.extra.prefers_reduced_motion = value;
+        self.extra.media_environment.prefers_reduced_motion = value;
     }
 
     /// Returns the reduced-motion preference of this [`Device`].
     pub fn prefers_reduced_motion(&self) -> PrefersReducedMotion {
-        self.extra.prefers_reduced_motion
+        self.extra.media_environment.prefers_reduced_motion
     }
 
     /// Set the [`PointerCapbabilities`] value for the primary pointer on this [`Device`]
