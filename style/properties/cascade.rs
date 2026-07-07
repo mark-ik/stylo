@@ -470,8 +470,9 @@ fn tweak_when_ignoring_colors(
         return;
     }
 
-    // Always honor colors if forced-color-adjust is set to none.
-    #[cfg(feature = "gecko")]
+    // Always honor colors if forced-color-adjust is set to none. (serval enables
+    // the `forced-color-adjust` longhand in Servo mode, so this opt-out is no
+    // longer gecko-only — see the media-feature parity plan's forced-colors item.)
     {
         let forced = context
             .builder
