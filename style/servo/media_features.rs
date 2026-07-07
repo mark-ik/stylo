@@ -6,13 +6,70 @@
 
 use crate::derives::*;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
-use crate::queries::values::{PrefersColorScheme, PrefersReducedMotion};
-use crate::values::computed::{CSSPixelLength, Context, Resolution};
+use crate::queries::values::{Orientation, PrefersColorScheme, PrefersReducedMotion};
+use crate::values::computed::{CSSPixelLength, Context, Ratio, Resolution};
 use std::fmt::Debug;
 
 /// https://drafts.csswg.org/mediaqueries-4/#width
 fn eval_width(context: &Context) -> CSSPixelLength {
     CSSPixelLength::new(context.device().au_viewport_size().width.to_f32_px())
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#height
+fn eval_height(context: &Context) -> CSSPixelLength {
+    CSSPixelLength::new(context.device().au_viewport_size().height.to_f32_px())
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#device-width
+/// Servo renders into the viewport with no separate device surface, so device
+/// dimensions equal the viewport dimensions.
+fn eval_device_width(context: &Context) -> CSSPixelLength {
+    eval_width(context)
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#device-height
+fn eval_device_height(context: &Context) -> CSSPixelLength {
+    eval_height(context)
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#aspect-ratio
+fn eval_aspect_ratio(context: &Context) -> Ratio {
+    let size = context.device().au_viewport_size();
+    Ratio::new(size.width.0 as f32, size.height.0 as f32)
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#device-aspect-ratio
+fn eval_device_aspect_ratio(context: &Context) -> Ratio {
+    eval_aspect_ratio(context)
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#orientation
+fn eval_orientation(context: &Context, value: Option<Orientation>) -> bool {
+    Orientation::eval(context.device().au_viewport_size(), value)
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#color
+fn eval_color(_: &Context) -> i32 {
+    // Truecolor: 8 bits per color component.
+    8
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#color-index
+fn eval_color_index(_: &Context) -> i32 {
+    // Not a color-lookup-table device.
+    0
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#monochrome
+fn eval_monochrome(_: &Context) -> i32 {
+    // Color device, not monochrome.
+    0
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#grid
+fn eval_grid(_: &Context) -> bool {
+    // A bitmap device, not a grid/tty; the 'grid' feature is always 0.
+    false
 }
 
 #[derive(Clone, Copy, Debug, FromPrimitive, Parse, ToCss)]
@@ -60,11 +117,71 @@ fn eval_prefers_reduced_motion(
 }
 
 /// A list with all the media features that Servo supports.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 7] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 17] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
         Evaluator::Length(eval_width),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("height"),
+        AllowsRanges::Yes,
+        Evaluator::Length(eval_height),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("device-width"),
+        AllowsRanges::Yes,
+        Evaluator::Length(eval_device_width),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("device-height"),
+        AllowsRanges::Yes,
+        Evaluator::Length(eval_device_height),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("aspect-ratio"),
+        AllowsRanges::Yes,
+        Evaluator::NumberRatio(eval_aspect_ratio),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("device-aspect-ratio"),
+        AllowsRanges::Yes,
+        Evaluator::NumberRatio(eval_device_aspect_ratio),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("orientation"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_orientation, Orientation),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("color"),
+        AllowsRanges::Yes,
+        Evaluator::Integer(eval_color),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("color-index"),
+        AllowsRanges::Yes,
+        Evaluator::Integer(eval_color_index),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("monochrome"),
+        AllowsRanges::Yes,
+        Evaluator::Integer(eval_monochrome),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("grid"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_grid),
         FeatureFlags::empty(),
     ),
     feature!(
