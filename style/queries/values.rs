@@ -93,6 +93,89 @@ pub enum InvertedColors {
     Inverted,
 }
 
+/// Values for the pointer / any-pointer media features.
+/// https://drafts.csswg.org/mediaqueries-4/#pointer
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum Pointer {
+    None,
+    Coarse,
+    #[default]
+    Fine,
+}
+
+/// Values for the hover / any-hover media features.
+/// https://drafts.csswg.org/mediaqueries-4/#hover
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum Hover {
+    None,
+    #[default]
+    Hover,
+}
+
+/// Values for the update media feature.
+/// https://drafts.csswg.org/mediaqueries-4/#update
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum Update {
+    None,
+    Slow,
+    #[default]
+    Fast,
+}
+
+/// Values for the overflow-block media feature.
+/// https://drafts.csswg.org/mediaqueries-4/#mf-overflow-block
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum OverflowBlock {
+    None,
+    #[default]
+    Scroll,
+    Paged,
+}
+
+/// Values for the overflow-inline media feature.
+/// https://drafts.csswg.org/mediaqueries-4/#mf-overflow-inline
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum OverflowInline {
+    None,
+    #[default]
+    Scroll,
+}
+
+/// Values for the color-gamut media feature. `PartialOrd` so a wider device
+/// gamut matches a narrower query (`query <= device`).
+/// https://drafts.csswg.org/mediaqueries-4/#color-gamut
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, PartialOrd, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum ColorGamut {
+    #[default]
+    Srgb,
+    P3,
+    Rec2020,
+}
+
+/// Values for the dynamic-range / video-dynamic-range media features.
+/// `PartialOrd` so a higher device range matches a lower query (`device >= query`).
+/// https://drafts.csswg.org/mediaqueries-5/#dynamic-range
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, PartialOrd, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum DynamicRange {
+    #[default]
+    Standard,
+    High,
+}
+
 /// The embedder-controlled media-feature values (user preferences and, as the
 /// Servo-mode parity set grows, device capabilities), held together so a host
 /// can set them on a [`Device`](crate::device::Device) atomically instead of one
@@ -115,4 +198,24 @@ pub struct MediaEnvironment {
     /// `forced-colors` (default: none). Query only; the forced-color-adjust
     /// computation behavior is a separate capability (see the parity plan).
     pub forced_colors: ForcedColors,
+    /// `pointer` — the primary pointing device's precision (default: fine).
+    pub pointer: Pointer,
+    /// `any-pointer` — the most capable pointing device (default: fine).
+    pub any_pointer: Pointer,
+    /// `hover` — whether the primary pointing device can hover (default: hover).
+    pub hover: Hover,
+    /// `any-hover` — whether any pointing device can hover (default: hover).
+    pub any_hover: Hover,
+    /// `update` — how fast the output can be updated (default: fast).
+    pub update: Update,
+    /// `overflow-block` — block-axis overflow handling (default: scroll).
+    pub overflow_block: OverflowBlock,
+    /// `overflow-inline` — inline-axis overflow handling (default: scroll).
+    pub overflow_inline: OverflowInline,
+    /// `color-gamut` — the display's color gamut (default: srgb).
+    pub color_gamut: ColorGamut,
+    /// `dynamic-range` — the display's dynamic range (default: standard).
+    pub dynamic_range: DynamicRange,
+    /// `video-dynamic-range` (default: standard).
+    pub video_dynamic_range: DynamicRange,
 }

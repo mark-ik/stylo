@@ -13,8 +13,9 @@ use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
 use crate::queries::values::{
-    InvertedColors, MediaEnvironment, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
-    PrefersReducedTransparency,
+    ColorGamut, DynamicRange, Hover, InvertedColors, MediaEnvironment, OverflowBlock,
+    OverflowInline, Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
+    PrefersReducedTransparency, Update,
 };
 use crate::values::computed::font::GenericFontFamily;
 use crate::values::computed::{CSSPixelLength, Length, LineHeight, NonNegativeLength};
@@ -312,6 +313,56 @@ impl Device {
     /// Returns the inverted-colors state of this [`Device`].
     pub fn inverted_colors(&self) -> InvertedColors {
         self.extra.media_environment.inverted_colors
+    }
+
+    /// Returns the primary pointing device precision (`pointer`).
+    pub fn pointer(&self) -> Pointer {
+        self.extra.media_environment.pointer
+    }
+
+    /// Returns the most-capable pointing device precision (`any-pointer`).
+    pub fn any_pointer(&self) -> Pointer {
+        self.extra.media_environment.any_pointer
+    }
+
+    /// Returns whether the primary pointing device can hover (`hover`).
+    pub fn hover(&self) -> Hover {
+        self.extra.media_environment.hover
+    }
+
+    /// Returns whether any pointing device can hover (`any-hover`).
+    pub fn any_hover(&self) -> Hover {
+        self.extra.media_environment.any_hover
+    }
+
+    /// Returns the output update capability (`update`).
+    pub fn update(&self) -> Update {
+        self.extra.media_environment.update
+    }
+
+    /// Returns the block-axis overflow handling (`overflow-block`).
+    pub fn overflow_block(&self) -> OverflowBlock {
+        self.extra.media_environment.overflow_block
+    }
+
+    /// Returns the inline-axis overflow handling (`overflow-inline`).
+    pub fn overflow_inline(&self) -> OverflowInline {
+        self.extra.media_environment.overflow_inline
+    }
+
+    /// Returns the display color gamut (`color-gamut`).
+    pub fn color_gamut(&self) -> ColorGamut {
+        self.extra.media_environment.color_gamut
+    }
+
+    /// Returns the display dynamic range (`dynamic-range`).
+    pub fn dynamic_range(&self) -> DynamicRange {
+        self.extra.media_environment.dynamic_range
+    }
+
+    /// Returns the video dynamic range (`video-dynamic-range`).
+    pub fn video_dynamic_range(&self) -> DynamicRange {
+        self.extra.media_environment.video_dynamic_range
     }
 
     pub(crate) fn is_dark_color_scheme(&self, _: ColorSchemeFlags) -> bool {

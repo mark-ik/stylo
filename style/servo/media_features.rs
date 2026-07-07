@@ -7,8 +7,9 @@
 use crate::derives::*;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
 use crate::queries::values::{
-    InvertedColors, Orientation, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
-    PrefersReducedTransparency,
+    ColorGamut, DynamicRange, Hover, InvertedColors, Orientation, OverflowBlock, OverflowInline,
+    Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion, PrefersReducedTransparency,
+    Update,
 };
 use crate::values::computed::{CSSPixelLength, Context, Ratio, Resolution};
 use crate::values::specified::color::ForcedColors;
@@ -159,8 +160,96 @@ fn eval_forced_colors(context: &Context, query_value: Option<ForcedColors>) -> b
     }
 }
 
+/// https://drafts.csswg.org/mediaqueries-4/#pointer
+fn eval_pointer(context: &Context, query_value: Option<Pointer>) -> bool {
+    let value = context.device().pointer();
+    match query_value {
+        Some(v) => value == v,
+        None => value != Pointer::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#descdef-media-any-pointer
+fn eval_any_pointer(context: &Context, query_value: Option<Pointer>) -> bool {
+    let value = context.device().any_pointer();
+    match query_value {
+        Some(v) => value == v,
+        None => value != Pointer::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#hover
+fn eval_hover(context: &Context, query_value: Option<Hover>) -> bool {
+    let value = context.device().hover();
+    match query_value {
+        Some(v) => value == v,
+        None => value != Hover::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#descdef-media-any-hover
+fn eval_any_hover(context: &Context, query_value: Option<Hover>) -> bool {
+    let value = context.device().any_hover();
+    match query_value {
+        Some(v) => value == v,
+        None => value != Hover::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#update
+fn eval_update(context: &Context, query_value: Option<Update>) -> bool {
+    let value = context.device().update();
+    match query_value {
+        Some(v) => value == v,
+        None => value != Update::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#mf-overflow-block
+fn eval_overflow_block(context: &Context, query_value: Option<OverflowBlock>) -> bool {
+    let value = context.device().overflow_block();
+    match query_value {
+        Some(v) => value == v,
+        None => true,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#mf-overflow-inline
+fn eval_overflow_inline(context: &Context, query_value: Option<OverflowInline>) -> bool {
+    let value = context.device().overflow_inline();
+    match query_value {
+        Some(v) => value == v,
+        None => value != OverflowInline::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#color-gamut
+fn eval_color_gamut(context: &Context, query_value: Option<ColorGamut>) -> bool {
+    // A wider device gamut matches a narrower query.
+    match query_value {
+        Some(v) => v <= context.device().color_gamut(),
+        None => false,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#dynamic-range
+fn eval_dynamic_range(context: &Context, query_value: Option<DynamicRange>) -> bool {
+    match query_value {
+        Some(v) => context.device().dynamic_range() >= v,
+        None => false,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#video-dynamic-range
+fn eval_video_dynamic_range(context: &Context, query_value: Option<DynamicRange>) -> bool {
+    match query_value {
+        Some(v) => context.device().video_dynamic_range() >= v,
+        None => false,
+    }
+}
+
 /// A list with all the media features that Servo supports.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 21] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 31] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -285,6 +374,66 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 21] = [
         atom!("forced-colors"),
         AllowsRanges::No,
         keyword_evaluator!(eval_forced_colors, ForcedColors),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("pointer"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_pointer, Pointer),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("any-pointer"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_any_pointer, Pointer),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("hover"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_hover, Hover),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("any-hover"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_any_hover, Hover),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("update"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_update, Update),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("overflow-block"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_overflow_block, OverflowBlock),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("overflow-inline"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_overflow_inline, OverflowInline),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("color-gamut"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_color_gamut, ColorGamut),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("dynamic-range"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_dynamic_range, DynamicRange),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("video-dynamic-range"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_video_dynamic_range, DynamicRange),
         FeatureFlags::empty(),
     ),
 ];
