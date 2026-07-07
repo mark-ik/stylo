@@ -125,6 +125,12 @@ prefers-contrast
 prefers-reduced-transparency
 inverted-colors
 forced-colors
+update
+overflow-block
+overflow-inline
+color-gamut
+dynamic-range
+video-dynamic-range
 print
 progress
 radio

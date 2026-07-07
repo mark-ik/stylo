@@ -13,8 +13,8 @@ use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
 use crate::queries::values::{
-    InvertedColors, MediaEnvironment, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
-    PrefersReducedTransparency,
+    ColorGamut, DynamicRange, InvertedColors, MediaEnvironment, OverflowBlock, OverflowInline,
+    PrefersColorScheme, PrefersContrast, PrefersReducedMotion, PrefersReducedTransparency, Update,
 };
 use crate::servo::media_features::PointerCapabilities;
 use crate::values::computed::font::GenericFontFamily;
@@ -365,6 +365,36 @@ impl Device {
     /// Returns the pointer capabilities of this [`Device`].
     pub fn all_pointer_capabilities(&self) -> PointerCapabilities {
         self.extra.all_pointer_capabilities
+    }
+
+    /// Returns the output update capability.
+    pub fn update(&self) -> Update {
+        self.extra.media_environment.update
+    }
+
+    /// Returns the block-axis overflow handling.
+    pub fn overflow_block(&self) -> OverflowBlock {
+        self.extra.media_environment.overflow_block
+    }
+
+    /// Returns the inline-axis overflow handling.
+    pub fn overflow_inline(&self) -> OverflowInline {
+        self.extra.media_environment.overflow_inline
+    }
+
+    /// Returns the display color gamut.
+    pub fn color_gamut(&self) -> ColorGamut {
+        self.extra.media_environment.color_gamut
+    }
+
+    /// Returns the display dynamic range.
+    pub fn dynamic_range(&self) -> DynamicRange {
+        self.extra.media_environment.dynamic_range
+    }
+
+    /// Returns the video dynamic range.
+    pub fn video_dynamic_range(&self) -> DynamicRange {
+        self.extra.media_environment.video_dynamic_range
     }
 
     pub(crate) fn is_dark_color_scheme(&self, _: ColorSchemeFlags) -> bool {

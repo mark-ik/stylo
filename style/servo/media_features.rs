@@ -7,8 +7,8 @@
 use crate::derives::*;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
 use crate::queries::values::{
-    InvertedColors, Orientation, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
-    PrefersReducedTransparency,
+    ColorGamut, DynamicRange, InvertedColors, Orientation, OverflowBlock, OverflowInline,
+    PrefersColorScheme, PrefersContrast, PrefersReducedMotion, PrefersReducedTransparency, Update,
 };
 use crate::values::computed::{CSSPixelLength, Context, Ratio, Resolution};
 use crate::values::specified::color::ForcedColors;
@@ -208,6 +208,57 @@ fn eval_any_hover(context: &Context, query_value: Option<Hover>) -> bool {
     eval_hover_capabilities(query_value, context.device().all_pointer_capabilities())
 }
 
+/// https://drafts.csswg.org/mediaqueries-4/#update
+fn eval_update(context: &Context, query_value: Option<Update>) -> bool {
+    let value = context.device().update();
+    match query_value {
+        Some(v) => value == v,
+        None => value != Update::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#mf-overflow-block
+fn eval_overflow_block(context: &Context, query_value: Option<OverflowBlock>) -> bool {
+    let value = context.device().overflow_block();
+    match query_value {
+        Some(v) => value == v,
+        None => true,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#mf-overflow-inline
+fn eval_overflow_inline(context: &Context, query_value: Option<OverflowInline>) -> bool {
+    let value = context.device().overflow_inline();
+    match query_value {
+        Some(v) => value == v,
+        None => value != OverflowInline::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#color-gamut
+fn eval_color_gamut(context: &Context, query_value: Option<ColorGamut>) -> bool {
+    match query_value {
+        Some(v) => v <= context.device().color_gamut(),
+        None => false,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#dynamic-range
+fn eval_dynamic_range(context: &Context, query_value: Option<DynamicRange>) -> bool {
+    match query_value {
+        Some(v) => context.device().dynamic_range() >= v,
+        None => false,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#video-dynamic-range
+fn eval_video_dynamic_range(context: &Context, query_value: Option<DynamicRange>) -> bool {
+    match query_value {
+        Some(v) => context.device().video_dynamic_range() >= v,
+        None => false,
+    }
+}
+
 /// <https://drafts.csswg.org/mediaqueries-4/#aspect-ratio>
 fn eval_aspect_ratio(context: &Context) -> Ratio {
     let size = context.device().au_viewport_size();
@@ -215,7 +266,7 @@ fn eval_aspect_ratio(context: &Context) -> Ratio {
 }
 
 /// A list with all the media features that Servo supports.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 20] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 26] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -337,6 +388,42 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 20] = [
         atom!("forced-colors"),
         AllowsRanges::No,
         keyword_evaluator!(eval_forced_colors, ForcedColors),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("update"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_update, Update),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("overflow-block"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_overflow_block, OverflowBlock),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("overflow-inline"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_overflow_inline, OverflowInline),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("color-gamut"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_color_gamut, ColorGamut),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("dynamic-range"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_dynamic_range, DynamicRange),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("video-dynamic-range"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_video_dynamic_range, DynamicRange),
         FeatureFlags::empty(),
     ),
 ];
