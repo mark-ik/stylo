@@ -12,7 +12,10 @@ use crate::logical_geometry::WritingMode;
 use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
-use crate::queries::values::{MediaEnvironment, PrefersColorScheme, PrefersReducedMotion};
+use crate::queries::values::{
+    InvertedColors, MediaEnvironment, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
+    PrefersReducedTransparency,
+};
 use crate::servo::media_features::PointerCapabilities;
 use crate::values::computed::font::GenericFontFamily;
 use crate::values::computed::{CSSPixelLength, Length, LineHeight, NonNegativeLength};
@@ -268,9 +271,9 @@ impl Device {
         self.extra.media_type.clone()
     }
 
-    /// Returns whether document colors are enabled.
+    /// Returns the forced-colors state for this document.
     pub fn forced_colors(&self) -> ForcedColors {
-        ForcedColors::None
+        self.extra.media_environment.forced_colors
     }
 
     /// Returns the default background color.
@@ -319,6 +322,21 @@ impl Device {
     /// Returns the reduced-motion preference of this [`Device`].
     pub fn prefers_reduced_motion(&self) -> PrefersReducedMotion {
         self.extra.media_environment.prefers_reduced_motion
+    }
+
+    /// Returns the contrast preference of this [`Device`].
+    pub fn prefers_contrast(&self) -> PrefersContrast {
+        self.extra.media_environment.prefers_contrast
+    }
+
+    /// Returns the reduced-transparency preference of this [`Device`].
+    pub fn prefers_reduced_transparency(&self) -> PrefersReducedTransparency {
+        self.extra.media_environment.prefers_reduced_transparency
+    }
+
+    /// Returns the inverted-colors state of this [`Device`].
+    pub fn inverted_colors(&self) -> InvertedColors {
+        self.extra.media_environment.inverted_colors
     }
 
     /// Set the [`PointerCapbabilities`] value for the primary pointer on this [`Device`]

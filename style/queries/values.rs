@@ -5,6 +5,7 @@
 //! Common feature values between media and container features.
 
 use crate::derives::*;
+use crate::values::specified::color::ForcedColors;
 use app_units::Au;
 use euclid::default::Size2D;
 
@@ -57,18 +58,61 @@ pub enum PrefersReducedMotion {
     Reduce,
 }
 
+/// Values for the prefers-reduced-transparency media feature.
+/// https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-transparency
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum PrefersReducedTransparency {
+    #[default]
+    NoPreference,
+    Reduce,
+}
+
+/// Values for the prefers-contrast media feature.
+/// https://drafts.csswg.org/mediaqueries-5/#prefers-contrast
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum PrefersContrast {
+    More,
+    Less,
+    Custom,
+    #[default]
+    NoPreference,
+}
+
+/// Values for the inverted-colors media feature.
+/// https://drafts.csswg.org/mediaqueries-5/#inverted
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum InvertedColors {
+    #[default]
+    None,
+    Inverted,
+}
+
 /// The embedder-controlled media-feature values (user preferences and, as the
 /// Servo-mode parity set grows, device capabilities), held together so a host
 /// can set them on a [`Device`](crate::device::Device) atomically instead of one
 /// clobbering setter per feature. `Default` is a conservative desktop screen.
 ///
 /// This is the Servo-mode counterpart of the per-feature state Gecko reads from
-/// its `nsPresContext`. It starts with the two preferences serval wires today
-/// and grows one field per media-feature parity phase.
+/// its `nsPresContext`. It grows one field per media-feature parity phase.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct MediaEnvironment {
     /// `prefers-color-scheme` (default: light).
     pub prefers_color_scheme: PrefersColorScheme,
     /// `prefers-reduced-motion` (default: no-preference).
     pub prefers_reduced_motion: PrefersReducedMotion,
+    /// `prefers-contrast` (default: no-preference).
+    pub prefers_contrast: PrefersContrast,
+    /// `prefers-reduced-transparency` (default: no-preference).
+    pub prefers_reduced_transparency: PrefersReducedTransparency,
+    /// `inverted-colors` (default: none).
+    pub inverted_colors: InvertedColors,
+    /// `forced-colors` (default: none). Query only; the forced-color-adjust
+    /// computation behavior is a separate capability (see the parity plan).
+    pub forced_colors: ForcedColors,
 }

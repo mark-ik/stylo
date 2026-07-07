@@ -6,8 +6,12 @@
 
 use crate::derives::*;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
-use crate::queries::values::{Orientation, PrefersColorScheme, PrefersReducedMotion};
+use crate::queries::values::{
+    InvertedColors, Orientation, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
+    PrefersReducedTransparency,
+};
 use crate::values::computed::{CSSPixelLength, Context, Ratio, Resolution};
+use crate::values::specified::color::ForcedColors;
 use std::fmt::Debug;
 
 /// https://drafts.csswg.org/mediaqueries-4/#width
@@ -79,6 +83,45 @@ fn eval_prefers_reduced_motion(
     match query_value {
         Some(v) => device_value == v,
         None => device_value != PrefersReducedMotion::NoPreference,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#prefers-contrast
+fn eval_prefers_contrast(context: &Context, query_value: Option<PrefersContrast>) -> bool {
+    let value = context.device().prefers_contrast();
+    match query_value {
+        Some(v) => value == v,
+        None => value != PrefersContrast::NoPreference,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-transparency
+fn eval_prefers_reduced_transparency(
+    context: &Context,
+    query_value: Option<PrefersReducedTransparency>,
+) -> bool {
+    let value = context.device().prefers_reduced_transparency();
+    match query_value {
+        Some(v) => value == v,
+        None => value != PrefersReducedTransparency::NoPreference,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#inverted
+fn eval_inverted_colors(context: &Context, query_value: Option<InvertedColors>) -> bool {
+    let value = context.device().inverted_colors();
+    match query_value {
+        Some(v) => value == v,
+        None => value != InvertedColors::None,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#forced-colors
+fn eval_forced_colors(context: &Context, query_value: Option<ForcedColors>) -> bool {
+    let value = context.device().forced_colors();
+    match query_value {
+        Some(v) => value == v,
+        None => value != ForcedColors::None,
     }
 }
 
@@ -172,7 +215,7 @@ fn eval_aspect_ratio(context: &Context) -> Ratio {
 }
 
 /// A list with all the media features that Servo supports.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 16] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 20] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -267,6 +310,33 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 16] = [
         atom!("prefers-reduced-motion"),
         AllowsRanges::No,
         keyword_evaluator!(eval_prefers_reduced_motion, PrefersReducedMotion),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("prefers-contrast"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_prefers_contrast, PrefersContrast),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("prefers-reduced-transparency"),
+        AllowsRanges::No,
+        keyword_evaluator!(
+            eval_prefers_reduced_transparency,
+            PrefersReducedTransparency
+        ),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("inverted-colors"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_inverted_colors, InvertedColors),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("forced-colors"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_forced_colors, ForcedColors),
         FeatureFlags::empty(),
     ),
 ];
