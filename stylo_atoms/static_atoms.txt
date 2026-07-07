@@ -135,6 +135,8 @@ overflow-inline
 color-gamut
 dynamic-range
 video-dynamic-range
+display-mode
+scripting
 print
 progress
 radio

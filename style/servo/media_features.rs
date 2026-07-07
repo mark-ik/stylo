@@ -7,9 +7,9 @@
 use crate::derives::*;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
 use crate::queries::values::{
-    ColorGamut, DynamicRange, Hover, InvertedColors, Orientation, OverflowBlock, OverflowInline,
-    Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion, PrefersReducedTransparency,
-    Update,
+    ColorGamut, DisplayMode, DynamicRange, Hover, InvertedColors, Orientation, OverflowBlock,
+    OverflowInline, Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
+    PrefersReducedTransparency, Scripting, Update,
 };
 use crate::values::computed::{CSSPixelLength, Context, Ratio, Resolution};
 use crate::values::specified::color::ForcedColors;
@@ -248,8 +248,25 @@ fn eval_video_dynamic_range(context: &Context, query_value: Option<DynamicRange>
     }
 }
 
+/// https://w3c.github.io/manifest/#the-display-mode-media-feature
+fn eval_display_mode(context: &Context, query_value: Option<DisplayMode>) -> bool {
+    match query_value {
+        Some(v) => context.device().display_mode() == v,
+        None => true,
+    }
+}
+
+/// https://drafts.csswg.org/mediaqueries-5/#scripting
+fn eval_scripting(context: &Context, query_value: Option<Scripting>) -> bool {
+    let value = context.device().scripting();
+    match query_value {
+        Some(v) => value == v,
+        None => value != Scripting::None,
+    }
+}
+
 /// A list with all the media features that Servo supports.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 31] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 33] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -434,6 +451,18 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 31] = [
         atom!("video-dynamic-range"),
         AllowsRanges::No,
         keyword_evaluator!(eval_video_dynamic_range, DynamicRange),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("display-mode"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_display_mode, DisplayMode),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("scripting"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_scripting, Scripting),
         FeatureFlags::empty(),
     ),
 ];
