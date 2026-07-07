@@ -13,8 +13,9 @@ use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
 use crate::queries::values::{
-    ColorGamut, DynamicRange, InvertedColors, MediaEnvironment, OverflowBlock, OverflowInline,
-    PrefersColorScheme, PrefersContrast, PrefersReducedMotion, PrefersReducedTransparency, Update,
+    ColorGamut, DisplayMode, DynamicRange, InvertedColors, MediaEnvironment, OverflowBlock,
+    OverflowInline, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
+    PrefersReducedTransparency, Scripting, Update,
 };
 use crate::servo::media_features::PointerCapabilities;
 use crate::values::computed::font::GenericFontFamily;
@@ -395,6 +396,16 @@ impl Device {
     /// Returns the video dynamic range.
     pub fn video_dynamic_range(&self) -> DynamicRange {
         self.extra.media_environment.video_dynamic_range
+    }
+
+    /// Returns the app window presentation mode.
+    pub fn display_mode(&self) -> DisplayMode {
+        self.extra.media_environment.display_mode
+    }
+
+    /// Returns whether scripting is available.
+    pub fn scripting(&self) -> Scripting {
+        self.extra.media_environment.scripting
     }
 
     pub(crate) fn is_dark_color_scheme(&self, _: ColorSchemeFlags) -> bool {

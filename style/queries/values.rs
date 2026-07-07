@@ -153,6 +153,31 @@ pub enum DynamicRange {
     High,
 }
 
+/// Values for the display-mode media feature.
+/// https://w3c.github.io/manifest/#the-display-mode-media-feature
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum DisplayMode {
+    #[default]
+    Browser,
+    MinimalUi,
+    Standalone,
+    Fullscreen,
+}
+
+/// Values for the scripting media feature.
+/// https://drafts.csswg.org/mediaqueries-5/#scripting
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum Scripting {
+    None,
+    InitialOnly,
+    #[default]
+    Enabled,
+}
+
 /// The embedder-controlled media-feature values (user preferences and, as the
 /// Servo-mode parity set grows, device capabilities), held together so a host
 /// can set them on a [`Device`](crate::device::Device) atomically instead of one
@@ -187,4 +212,9 @@ pub struct MediaEnvironment {
     pub dynamic_range: DynamicRange,
     /// `video-dynamic-range` (default: standard).
     pub video_dynamic_range: DynamicRange,
+    /// `display-mode` — the app window presentation mode (default: browser).
+    pub display_mode: DisplayMode,
+    /// `scripting` — whether scripting is available (default: enabled). Hosts
+    /// set this from whether their script runtime is live.
+    pub scripting: Scripting,
 }
