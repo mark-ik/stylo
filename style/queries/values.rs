@@ -44,3 +44,14 @@ pub enum PrefersColorScheme {
     Light,
     Dark,
 }
+
+/// Values for the prefers-reduced-motion media feature.
+/// https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-motion
+#[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+#[allow(missing_docs)]
+pub enum PrefersReducedMotion {
+    #[default]
+    NoPreference,
+    Reduce,
+}

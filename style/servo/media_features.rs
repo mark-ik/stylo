@@ -6,7 +6,7 @@
 
 use crate::derives::*;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
-use crate::queries::values::PrefersColorScheme;
+use crate::queries::values::{PrefersColorScheme, PrefersReducedMotion};
 use crate::values::computed::{CSSPixelLength, Context, Resolution};
 use std::fmt::Debug;
 
@@ -46,8 +46,21 @@ fn eval_prefers_color_scheme(context: &Context, query_value: Option<PrefersColor
     }
 }
 
+/// https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-motion
+fn eval_prefers_reduced_motion(
+    context: &Context,
+    query_value: Option<PrefersReducedMotion>,
+) -> bool {
+    let device_value = context.device().prefers_reduced_motion();
+    match query_value {
+        Some(v) => device_value == v,
+        // Boolean context `(prefers-reduced-motion)`: true unless no-preference.
+        None => device_value != PrefersReducedMotion::NoPreference,
+    }
+}
+
 /// A list with all the media features that Servo supports.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 6] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 7] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -82,6 +95,12 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 6] = [
         atom!("prefers-color-scheme"),
         AllowsRanges::No,
         keyword_evaluator!(eval_prefers_color_scheme, PrefersColorScheme),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("prefers-reduced-motion"),
+        AllowsRanges::No,
+        keyword_evaluator!(eval_prefers_reduced_motion, PrefersReducedMotion),
         FeatureFlags::empty(),
     ),
 ];
