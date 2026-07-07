@@ -13,8 +13,8 @@ use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
 use crate::queries::values::{
-    ColorGamut, DisplayMode, DynamicRange, Hover, InvertedColors, MediaEnvironment, OverflowBlock,
-    OverflowInline, Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
+    ColorGamut, DisplayMode, DynamicRange, InvertedColors, MediaEnvironment, OverflowBlock,
+    OverflowInline, PointerCapabilities, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
     PrefersReducedTransparency, Scripting, Update,
 };
 use crate::values::computed::font::GenericFontFamily;
@@ -315,24 +315,16 @@ impl Device {
         self.extra.media_environment.inverted_colors
     }
 
-    /// Returns the primary pointing device precision (`pointer`).
-    pub fn pointer(&self) -> Pointer {
-        self.extra.media_environment.pointer
+    /// Returns the primary pointing device's capabilities (drives `pointer` and
+    /// `hover`).
+    pub fn primary_pointer_capabilities(&self) -> PointerCapabilities {
+        self.extra.media_environment.primary_pointer_capabilities
     }
 
-    /// Returns the most-capable pointing device precision (`any-pointer`).
-    pub fn any_pointer(&self) -> Pointer {
-        self.extra.media_environment.any_pointer
-    }
-
-    /// Returns whether the primary pointing device can hover (`hover`).
-    pub fn hover(&self) -> Hover {
-        self.extra.media_environment.hover
-    }
-
-    /// Returns whether any pointing device can hover (`any-hover`).
-    pub fn any_hover(&self) -> Hover {
-        self.extra.media_environment.any_hover
+    /// Returns the union of every pointing device's capabilities (drives
+    /// `any-pointer` and `any-hover`).
+    pub fn all_pointer_capabilities(&self) -> PointerCapabilities {
+        self.extra.media_environment.all_pointer_capabilities
     }
 
     /// Returns the output update capability (`update`).

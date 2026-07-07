@@ -116,6 +116,32 @@ pub enum Hover {
     Hover,
 }
 
+/// The capabilities of a pointing device, evaluated by the pointer/hover
+/// interaction media features. Unlike a single [`Pointer`]/[`Hover`] value this
+/// is a *set*: a hybrid device (touchscreen + mouse) reports both `COARSE` and
+/// `FINE` for `any-pointer`, so `(any-pointer: coarse)` and `(any-pointer:
+/// fine)` both match.
+/// https://drafts.csswg.org/mediaqueries-4/#mf-interaction
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PointerCapabilities(u8);
+bitflags! {
+    impl PointerCapabilities : u8 {
+        /// A coarse pointing device (e.g. a touchscreen).
+        const COARSE = 1 << 0;
+        /// A fine pointing device (e.g. a mouse or stylus).
+        const FINE = 1 << 1;
+        /// The device can hover over elements.
+        const HOVER = 1 << 2;
+    }
+}
+
+impl Default for PointerCapabilities {
+    /// Conservative desktop default: a fine pointer that can hover (a mouse).
+    fn default() -> Self {
+        PointerCapabilities::FINE | PointerCapabilities::HOVER
+    }
+}
+
 /// Values for the update media feature.
 /// https://drafts.csswg.org/mediaqueries-4/#update
 #[derive(Clone, Copy, Debug, Default, FromPrimitive, Parse, PartialEq, ToCss)]
@@ -223,14 +249,13 @@ pub struct MediaEnvironment {
     /// `forced-colors` (default: none). Query only; the forced-color-adjust
     /// computation behavior is a separate capability (see the parity plan).
     pub forced_colors: ForcedColors,
-    /// `pointer` — the primary pointing device's precision (default: fine).
-    pub pointer: Pointer,
-    /// `any-pointer` — the most capable pointing device (default: fine).
-    pub any_pointer: Pointer,
-    /// `hover` — whether the primary pointing device can hover (default: hover).
-    pub hover: Hover,
-    /// `any-hover` — whether any pointing device can hover (default: hover).
-    pub any_hover: Hover,
+    /// The primary pointing device's capabilities — drives `pointer` and
+    /// `hover` (default: fine + hover, a mouse).
+    pub primary_pointer_capabilities: PointerCapabilities,
+    /// The union of every pointing device's capabilities — drives `any-pointer`
+    /// and `any-hover` (default: fine + hover). A hybrid device sets both COARSE
+    /// and FINE here so both `any-pointer` values match.
+    pub all_pointer_capabilities: PointerCapabilities,
     /// `update` — how fast the output can be updated (default: fast).
     pub update: Update,
     /// `overflow-block` — block-axis overflow handling (default: scroll).

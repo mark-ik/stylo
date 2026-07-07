@@ -8,8 +8,8 @@ use crate::derives::*;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
 use crate::queries::values::{
     ColorGamut, DisplayMode, DynamicRange, Hover, InvertedColors, Orientation, OverflowBlock,
-    OverflowInline, Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion,
-    PrefersReducedTransparency, Scripting, Update,
+    OverflowInline, Pointer, PointerCapabilities, PrefersColorScheme, PrefersContrast,
+    PrefersReducedMotion, PrefersReducedTransparency, Scripting, Update,
 };
 use crate::values::computed::{CSSPixelLength, Context, Ratio, Resolution};
 use crate::values::specified::color::ForcedColors;
@@ -160,40 +160,45 @@ fn eval_forced_colors(context: &Context, query_value: Option<ForcedColors>) -> b
     }
 }
 
+/// Shared pointer/any-pointer evaluation against a capability set: a device
+/// with both COARSE and FINE (a hybrid) matches either query value.
+fn eval_pointer_capabilities(query_value: Option<Pointer>, caps: PointerCapabilities) -> bool {
+    match query_value {
+        None => !caps.is_empty(),
+        Some(Pointer::None) => caps.is_empty(),
+        Some(Pointer::Coarse) => caps.intersects(PointerCapabilities::COARSE),
+        Some(Pointer::Fine) => caps.intersects(PointerCapabilities::FINE),
+    }
+}
+
 /// https://drafts.csswg.org/mediaqueries-4/#pointer
 fn eval_pointer(context: &Context, query_value: Option<Pointer>) -> bool {
-    let value = context.device().pointer();
-    match query_value {
-        Some(v) => value == v,
-        None => value != Pointer::None,
-    }
+    eval_pointer_capabilities(query_value, context.device().primary_pointer_capabilities())
 }
 
 /// https://drafts.csswg.org/mediaqueries-4/#descdef-media-any-pointer
 fn eval_any_pointer(context: &Context, query_value: Option<Pointer>) -> bool {
-    let value = context.device().any_pointer();
+    eval_pointer_capabilities(query_value, context.device().all_pointer_capabilities())
+}
+
+/// Shared hover/any-hover evaluation against a capability set's HOVER bit.
+fn eval_hover_capabilities(query_value: Option<Hover>, caps: PointerCapabilities) -> bool {
+    let can_hover = caps.intersects(PointerCapabilities::HOVER);
     match query_value {
-        Some(v) => value == v,
-        None => value != Pointer::None,
+        None => can_hover,
+        Some(Hover::None) => !can_hover,
+        Some(Hover::Hover) => can_hover,
     }
 }
 
 /// https://drafts.csswg.org/mediaqueries-4/#hover
 fn eval_hover(context: &Context, query_value: Option<Hover>) -> bool {
-    let value = context.device().hover();
-    match query_value {
-        Some(v) => value == v,
-        None => value != Hover::None,
-    }
+    eval_hover_capabilities(query_value, context.device().primary_pointer_capabilities())
 }
 
 /// https://drafts.csswg.org/mediaqueries-4/#descdef-media-any-hover
 fn eval_any_hover(context: &Context, query_value: Option<Hover>) -> bool {
-    let value = context.device().any_hover();
-    match query_value {
-        Some(v) => value == v,
-        None => value != Hover::None,
-    }
+    eval_hover_capabilities(query_value, context.device().all_pointer_capabilities())
 }
 
 /// https://drafts.csswg.org/mediaqueries-4/#update
