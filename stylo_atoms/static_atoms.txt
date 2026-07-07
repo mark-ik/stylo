@@ -120,6 +120,7 @@ pointer
 popstate
 postershown
 prefers-color-scheme
+prefers-reduced-motion
 print
 progress
 radio

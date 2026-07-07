@@ -12,7 +12,7 @@ use crate::logical_geometry::WritingMode;
 use crate::media_queries::MediaType;
 use crate::properties::style_structs::Font;
 use crate::properties::ComputedValues;
-use crate::queries::values::PrefersColorScheme;
+use crate::queries::values::{PrefersColorScheme, PrefersReducedMotion};
 use crate::servo::media_features::PointerCapabilities;
 use crate::values::computed::font::GenericFontFamily;
 use crate::values::computed::{CSSPixelLength, Length, LineHeight, NonNegativeLength};
@@ -67,6 +67,9 @@ pub(super) struct ExtraDeviceData {
     /// Whether the user prefers light mode or dark mode
     #[ignore_malloc_size_of = "Pure stack type"]
     prefers_color_scheme: PrefersColorScheme,
+    /// Whether the user prefers reduced motion.
+    #[ignore_malloc_size_of = "Pure stack type"]
+    prefers_reduced_motion: PrefersReducedMotion,
     /// The capabilities of the primary pointer input
     #[ignore_malloc_size_of = "Pure stack type"]
     primary_pointer_capabilities: PointerCapabilities,
@@ -117,6 +120,7 @@ impl Device {
                 device_pixel_ratio,
                 quirks_mode,
                 prefers_color_scheme,
+                prefers_reduced_motion: PrefersReducedMotion::NoPreference,
                 primary_pointer_capabilities,
                 all_pointer_capabilities,
                 font_metrics_provider,
@@ -292,6 +296,20 @@ impl Device {
     /// Returns the color scheme of this [`Device`].
     pub fn color_scheme(&self) -> PrefersColorScheme {
         self.extra.prefers_color_scheme
+    }
+
+    /// Set the [`PrefersReducedMotion`] value on this [`Device`].
+    ///
+    /// Note that this does not update any associated `Stylist`. For this you must call
+    /// `Stylist::media_features_change_changed_style` and
+    /// `Stylist::force_stylesheet_origins_dirty`.
+    pub fn set_prefers_reduced_motion(&mut self, value: PrefersReducedMotion) {
+        self.extra.prefers_reduced_motion = value;
+    }
+
+    /// Returns the reduced-motion preference of this [`Device`].
+    pub fn prefers_reduced_motion(&self) -> PrefersReducedMotion {
+        self.extra.prefers_reduced_motion
     }
 
     /// Set the [`PointerCapbabilities`] value for the primary pointer on this [`Device`]
