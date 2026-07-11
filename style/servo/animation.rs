@@ -859,7 +859,14 @@ impl Animation {
         let total_progress = progress.min(self.current_iteration_end_progress()).max(0.0);
 
         // At 1.0 there is nothing left to interpolate. Return end keyframe.
-        if total_progress == 1.0 {
+        //
+        // Compared at f32 resolution deliberately: the keyframe search below
+        // casts total_progress to f32 against the keyframes' f32 start
+        // percentages, so an f64 progress in (1 - 2^-24, 1.0) — one a host's
+        // accumulated frame clock readily produces — casts to exactly 1.0f32,
+        // satisfies no "next" keyframe, and falls into the debug_unreachable
+        // below. Within f32 resolution such a progress *is* the end keyframe.
+        if total_progress as f32 >= 1.0 {
             let keyframe = match self.current_direction {
                 AnimationDirection::Normal => self.computed_steps.last().unwrap(),
                 AnimationDirection::Reverse => self.computed_steps.first().unwrap(),
