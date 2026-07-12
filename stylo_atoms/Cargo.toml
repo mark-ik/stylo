@@ -1,5 +1,5 @@
 [package]
-name = "stylo_atoms"
+name = "serval-stylo-atoms"
 version.workspace = true
 authors = ["The Servo Project Developers"]
 documentation = "https://docs.rs/stylo_atoms/"
@@ -11,6 +11,7 @@ build = "build.rs"
 readme = "../README.md"
 
 [lib]
+name = "stylo_atoms"
 path = "lib.rs"
 
 [dependencies]
