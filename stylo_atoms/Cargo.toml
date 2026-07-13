@@ -1,5 +1,5 @@
 [package]
-name = "serval-stylo-atoms"
+name = "genet-stylo-atoms"
 version.workspace = true
 authors = ["The Servo Project Developers"]
 documentation = "https://docs.rs/stylo_atoms/"

@@ -1,5 +1,5 @@
 [package]
-name = "serval-stylo"
+name = "genet-stylo"
 version.workspace = true
 authors = ["The Servo Project Developers"]
 license = "MPL-2.0"

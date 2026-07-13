@@ -1,5 +1,5 @@
 [package]
-name = "serval-stylo-dom"
+name = "genet-stylo-dom"
 version.workspace = true
 authors = ["The Servo Project Developers"]
 documentation = "https://docs.rs/stylo_dom/"

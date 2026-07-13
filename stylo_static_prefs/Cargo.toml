@@ -1,5 +1,5 @@
 [package]
-name = "serval-stylo-static-prefs"
+name = "genet-stylo-static-prefs"
 version.workspace = true
 authors = ["The Servo Project Developers"]
 documentation = "https://docs.rs/stylo_static_prefs/"
