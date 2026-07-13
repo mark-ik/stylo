@@ -39,6 +39,34 @@ fn eval_device_height(context: &Context) -> CSSPixelLength {
     CSSPixelLength::new(scaled.height)
 }
 
+/// https://drafts.csswg.org/mediaqueries-4/#device-aspect-ratio
+fn eval_device_aspect_ratio(context: &Context) -> Ratio {
+    let device = context.device();
+    let size = device.device_size();
+    Ratio::new(size.width, size.height)
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#color
+fn eval_color(_: &Context) -> i32 {
+    // Truecolor: 8 bits per color component.
+    8
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#color-index
+fn eval_color_index(_: &Context) -> i32 {
+    0
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#monochrome
+fn eval_monochrome(_: &Context) -> i32 {
+    0
+}
+
+/// https://drafts.csswg.org/mediaqueries-4/#grid
+fn eval_grid(_: &Context) -> bool {
+    false
+}
+
 /// https://drafts.csswg.org/mediaqueries-4/#orientation
 fn eval_orientation(context: &Context, value: Option<Orientation>) -> bool {
     Orientation::eval(context.device().au_viewport_size(), value)
@@ -284,7 +312,7 @@ fn eval_aspect_ratio(context: &Context) -> Ratio {
 }
 
 /// A list with all the media features that Servo supports.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 28] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 33] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -343,6 +371,36 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 28] = [
         atom!("device-height"),
         AllowsRanges::Yes,
         Evaluator::Length(eval_device_height),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("device-aspect-ratio"),
+        AllowsRanges::Yes,
+        Evaluator::NumberRatio(eval_device_aspect_ratio),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("color"),
+        AllowsRanges::Yes,
+        Evaluator::Integer(eval_color),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("color-index"),
+        AllowsRanges::Yes,
+        Evaluator::Integer(eval_color_index),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("monochrome"),
+        AllowsRanges::Yes,
+        Evaluator::Integer(eval_monochrome),
+        FeatureFlags::empty(),
+    ),
+    feature!(
+        atom!("grid"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_grid),
         FeatureFlags::empty(),
     ),
     feature!(

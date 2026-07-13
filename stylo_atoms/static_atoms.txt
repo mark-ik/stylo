@@ -39,6 +39,10 @@ click
 close
 closing
 color
+color-index
+monochrome
+grid
+device-aspect-ratio
 command
 complete
 compositionend
