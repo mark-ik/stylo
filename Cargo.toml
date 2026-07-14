@@ -31,6 +31,6 @@ malloc_size_of  = { version = "0.19.0", path = "./malloc_size_of", package = "st
 static_prefs    = { version = "0.19.0", path = "./stylo_static_prefs", package = "genet-stylo-static-prefs" }
 stylo_atoms     = { version = "0.19.0", path = "./stylo_atoms", package = "genet-stylo-atoms" }
 dom             = { version = "0.19.0", path = "./stylo_dom", package = "genet-stylo-dom" }
-style_traits    = { version = "0.19.0", path = "./style_traits", features = ["servo"], package = "stylo_traits"}
+style_traits    = { version = "0.19.0", path = "./style_traits", features = ["servo"], package = "genet-stylo-traits"}
 style_derive    = { version = "0.19.0", path = "./style_derive", package = "stylo_derive"}
 stylo           = { version = "0.19.0", path = "./style", package = "genet-stylo" }

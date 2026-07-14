@@ -1,9 +1,9 @@
 [package]
-name = "stylo_traits"
+name = "genet-stylo-traits"
 version.workspace = true
 authors = ["The Servo Project Developers"]
 license = "MPL-2.0"
-repository = "https://github.com/servo/stylo"
+repository = "https://github.com/mark-ik/stylo"
 edition = "2021"
 description = "Types used by the Stylo CSS engine"
 readme = "../README.md"
