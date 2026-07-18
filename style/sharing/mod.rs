@@ -648,6 +648,19 @@ impl<E: TElement> StyleSharingCache<E> {
             },
         };
 
+        // A candidate is only comparable if its parent is STYLED: the lookup
+        // compares parent style identities, and a target only reaches the
+        // cache when its own parent style exists. A subtree-rooted cascade
+        // (genet-layout's SubtreeView / forest-dom window roots) styles a
+        // root ELEMENT's children first, so their parent exists in the tree
+        // but carries no data - inserting them would make
+        // parent_style_identity unwrap it later. (2026-07-18, found by
+        // merecat's chrome-forest migration.)
+        if parent.borrow_data().map_or(true, |d| d.styles.get_primary().is_none()) {
+            debug!("Failing to insert to the cache: parent has no styles");
+            return;
+        }
+
         if !element.matches_user_and_content_rules() {
             debug!("Failing to insert into the cache: no tree rules:");
             return;
