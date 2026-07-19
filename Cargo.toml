@@ -17,7 +17,7 @@ members = [
 default-members = ["style"]
 
 [workspace.package]
-version = "0.19.0"
+version = "0.19.1"
 
 [workspace.dependencies]
 # in-repo dependencies (separately versioned)
